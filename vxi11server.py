@@ -20,7 +20,7 @@ import logging
 logger = logging.getLogger('x11server')
 logger.setLevel(logging.DEBUG)
 ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
+ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
 
 RPCVERSION = 2
@@ -929,6 +929,12 @@ class Vxi11Packer(Packer):
         self.pack_int(error)
         self.pack_uint(size)
 
+    def pack_device_read_resp(self, error, long_error, data):
+	self.pack_int(error)
+        self.pack_int(long_error)
+        self.pack_int(4) # Flags: EOI-set = True
+        self.pack_opaque(data)
+
 
 def testsvr():
     # Simple test class -- proc 1 doubles its string argument as reply
@@ -942,6 +948,11 @@ def testsvr():
             self.packer.pack_device_write_resp(0,len(params[4]))
             logger.debug('DEVICE_WRITE %s', params)
             on_receive(params[4])
+        def handle_12(self):
+            params = self.unpacker.unpack_device_write_params()
+            data = on_send()
+            self.packer.pack_device_read_resp(0, 0, data)
+            logger.debug('DEVICE_READ %s', params)
         def handle_23(self):
             params = self.unpacker.unpack_destroy_link_params()
             logger.debug('DESTROY_LINK %s', params)
@@ -979,6 +990,10 @@ def testsvr():
 
 def on_receive(message):
     logger.info("received string: %s", message)
+
+def on_send():
+    logger.info("received read command")
+    return "TESTIIII"
 
 def listen(loglevel = 'INFO'):
     ch.setLevel(getattr(logging, loglevel)) 
