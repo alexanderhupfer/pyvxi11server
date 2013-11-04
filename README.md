@@ -1,4 +1,4 @@
-pyx11client
+pyvxi11server
 ===========
 
-x11 / GPIB over Ethernet client to interaface a raspberry pi with labview
+VXI-11 / GPIB over Ethernet server components to interaface a raspberry pi with labview
